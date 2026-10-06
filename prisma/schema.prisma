@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Consignor {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  items       Item[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Item {
+  id           Int           @id @default(autoincrement())
+  description  String
+  unitPrice    Decimal       @db.Decimal(10, 2)
+  consignorId  Int
+  consignor    Consignor     @relation(fields: [consignorId], references: [id])
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@unique([description, consignorId])
+}
+
+model Transaction {
+  id              Int      @id @default(autoincrement())
+  itemId          Int
+  item            Item     @relation(fields: [itemId], references: [id])
+  type            String   // "DELIVERY", "CONSUMED", "RETURNED"
+  quantity        Int
+  referenceNumber String?
+  paymentType     String?  // "CASH", "CHARGED", null
+  transactionDate DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
